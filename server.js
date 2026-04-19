@@ -8,7 +8,9 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static("frontend"));
 
-const hotelDb = new sqlite3.Database(path.join(__dirname, "Hotel database.db"));
+const hotelDb = new sqlite3.Database(
+    path.join(__dirname, "src", "storage", "Hotel database.db")
+);
 
 app.get("/api/hotels", (req, res) => {
     const q = req.query.q ? `%${req.query.q}%` : "%";
