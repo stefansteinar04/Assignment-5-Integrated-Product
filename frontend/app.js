@@ -1,22 +1,51 @@
 const searchInput = document.getElementById("searchInput");
-const searchBtn = document.getElementById("searchBtn");
 const results = document.getElementById("results");
+const suggestions = document.getElementById("suggestions");
+
+let debounceTimer = null;
 
 function formatDate(dateString) {
     const [year, month, day] = dateString.split("-");
     return `${parseInt(day)}-${parseInt(month)}-${year.slice(2)}`;
 }
 
-async function searchHotels() {
-    const q = searchInput.value.trim();
+async function fetchHotels(query = "") {
+    const res = await fetch(`/api/hotels?q=${encodeURIComponent(query)}`);
+    if (!res.ok) {
+        throw new Error("Failed to fetch hotels");
+    }
+    return res.json();
+}
 
-    const res = await fetch(`/api/hotels?q=${encodeURIComponent(q)}`);
-    const hotels = await res.json();
+function renderSuggestions(hotels) {
+    suggestions.innerHTML = "";
 
+    if (!hotels.length) {
+        suggestions.classList.add("hidden");
+        return;
+    }
+
+    hotels.slice(0, 6).forEach(hotel => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "suggestion-item";
+        item.textContent = `${hotel.name} - ${hotel.city}`;
+        item.addEventListener("click", () => {
+            searchInput.value = hotel.name;
+            suggestions.classList.add("hidden");
+            renderHotelResults([hotel]);
+        });
+        suggestions.appendChild(item);
+    });
+
+    suggestions.classList.remove("hidden");
+}
+
+function renderHotelResults(hotels) {
     results.innerHTML = "";
 
     if (hotels.length === 0) {
-        results.innerHTML = "<p>No hotels found.</p>";
+        results.innerHTML = `<div class="empty-state">No hotels found.</div>`;
         return;
     }
 
@@ -24,18 +53,52 @@ async function searchHotels() {
         const div = document.createElement("div");
         div.className = "hotel-card";
         div.innerHTML = `
-        <h3>${hotel.name}</h3>
-        <p><strong>City:</strong> ${hotel.city}</p>
-        <p><strong>Area:</strong> ${hotel.area ?? ""}</p>
-        <p><strong>Stars:</strong> ${hotel.starRating ?? ""}</p>
-        <p>${hotel.description ?? ""}</p>
+            <h3>${hotel.name}</h3>
 
-        <button onclick="loadRooms(${hotel.hotel_id})">Show Rooms</button>
+            <div class="hotel-meta">
+                <span class="hotel-tag">City: ${hotel.city}</span>
+                <span class="hotel-tag">Area: ${hotel.area ?? ""}</span>
+                <span class="hotel-tag">Stars: ${hotel.starRating ?? ""}</span>
+            </div>
 
-        <div id="rooms-${hotel.hotel_id}" class="rooms-box"></div>
+            <p>${hotel.description ?? ""}</p>
+
+            <button onclick="loadRooms(${hotel.hotel_id})">Show Rooms</button>
+            <div id="rooms-${hotel.hotel_id}" class="rooms-box"></div>
         `;
         results.appendChild(div);
     });
+}
+
+async function searchHotels() {
+    const q = searchInput.value.trim();
+
+    try {
+        const hotels = await fetchHotels(q);
+        suggestions.classList.add("hidden");
+        renderHotelResults(hotels);
+    } catch (err) {
+        results.innerHTML = `<p>Error: ${err.message}</p>`;
+    }
+}
+
+async function handleLiveSearch() {
+    const q = searchInput.value.trim();
+
+    if (!q) {
+        suggestions.classList.add("hidden");
+        results.innerHTML = "";
+        return;
+    }
+
+    try {
+        const hotels = await fetchHotels(q);
+        renderSuggestions(hotels);
+        renderHotelResults(hotels);
+    } catch (err) {
+        suggestions.classList.add("hidden");
+        results.innerHTML = `<p>Error: ${err.message}</p>`;
+    }
 }
 
 async function loadRooms(hotelId) {
@@ -152,4 +215,20 @@ async function bookRoom(roomId, maxGuests, pricePerNight) {
     }
 }
 
-searchBtn.addEventListener("click", searchHotels);
+
+searchInput.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(handleLiveSearch, 250);
+});
+
+searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        searchHotels();
+    }
+});
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-wrapper")) {
+        suggestions.classList.add("hidden");
+    }
+});
