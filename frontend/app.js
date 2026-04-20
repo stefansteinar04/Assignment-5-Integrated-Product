@@ -193,8 +193,8 @@ async function bookRoom(roomId, maxGuests, pricePerNight) {
                 room_id: roomId,
                 name,
                 phone,
-                check_in: formattedCheckIn,
-                check_out: formattedCheckOut,
+                check_in: checkIn,
+                check_out: checkOut,
                 guestCount
             })
         });

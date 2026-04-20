@@ -49,6 +49,22 @@ h1 {
     color: var(--muted);
 }
 
+.admin-link {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    color: var(--muted);
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 1000;
+}
+
+.admin-link:hover {
+    text-decoration: underline;
+}
+
 .search-box {
     margin-bottom: 24px;
 }
