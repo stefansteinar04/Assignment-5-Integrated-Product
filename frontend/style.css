@@ -40,4 +40,48 @@ button {
     margin-bottom: 12px;
     background: #fafafa;
 }
+ 
+.booking-form {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fafafa;
+}
   
+.booking-form label {
+    font-size: 13px;
+    font-weight: bold;
+}
+  
+.booking-form input {
+    padding: 6px;
+}
+  
+.booking-form button {
+    margin-top: 8px;
+}
+  
+.msg {
+    font-size: 13px;
+    margin-top: 5px;
+}
+  
+.hidden {
+    display: none;
+}
+
+.rooms-box {
+    margin-top: 10px;
+}
+  
+.room-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
+    background: #f9f9f9;
+}
