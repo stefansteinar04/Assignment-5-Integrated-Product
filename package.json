@@ -2,9 +2,10 @@
   "name": "assignment-5-integrated-product",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "test": "jest --runInBand"
   },
   "repository": {
     "type": "git",
@@ -13,13 +14,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/stefansteinar04/Assignment-5-Integrated-Product/issues"
-  },
-  "homepage": "https://github.com/stefansteinar04/Assignment-5-Integrated-Product#readme",
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
+  },
+  "jest": {
+    "testEnvironment": "node"
   }
 }

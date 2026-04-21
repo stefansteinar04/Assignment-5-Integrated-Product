@@ -13,6 +13,10 @@ app.get("/api/rooms/:hotelId", hotelController.getRooms);
 app.post("/api/reservations", reservationController.createReservation);
 app.get("/api/reservations", reservationController.getReservations);
 
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running at http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;
