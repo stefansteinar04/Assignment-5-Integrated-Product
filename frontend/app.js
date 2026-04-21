@@ -4,11 +4,6 @@ const suggestions = document.getElementById("suggestions");
 
 let debounceTimer = null;
 
-function formatDate(dateString) {
-    const [year, month, day] = dateString.split("-");
-    return `${parseInt(day)}-${parseInt(month)}-${year.slice(2)}`;
-}
-
 async function fetchHotels(query = "") {
     const res = await fetch(`/api/hotels?q=${encodeURIComponent(query)}`);
     if (!res.ok) {
@@ -164,7 +159,7 @@ async function bookRoom(roomId, maxGuests, pricePerNight) {
     const phone = document.getElementById(`phone-${roomId}`).value;
     const checkIn = document.getElementById(`checkin-${roomId}`).value;
     const checkOut = document.getElementById(`checkout-${roomId}`).value;
-    const guestCount = parseInt(document.getElementById(`guests-${roomId}`).value);
+    const guestCount = parseInt(document.getElementById(`guests-${roomId}`).value, 10);
 
     const msg = document.getElementById(`msg-${roomId}`);
 
@@ -174,14 +169,17 @@ async function bookRoom(roomId, maxGuests, pricePerNight) {
         return;
     }
 
+    if (checkIn >= checkOut) {
+        msg.textContent = "Check-out date must be after check-in date.";
+        msg.style.color = "red";
+        return;
+    }
+
     if (guestCount > maxGuests) {
         msg.textContent = `Max guests for this room is ${maxGuests}.`;
         msg.style.color = "red";
         return;
     }
-
-    const formattedCheckIn = formatDate(checkIn);
-    const formattedCheckOut = formatDate(checkOut);
 
     try {
         const res = await fetch("/api/reservations", {
@@ -214,7 +212,6 @@ async function bookRoom(roomId, maxGuests, pricePerNight) {
         msg.style.color = "red";
     }
 }
-
 
 searchInput.addEventListener("input", () => {
     clearTimeout(debounceTimer);
