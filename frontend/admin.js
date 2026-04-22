@@ -3,6 +3,66 @@ const blockList = document.getElementById("blockList");
 const blockBtn = document.getElementById("blockBtn");
 const blockMessage = document.getElementById("blockMessage");
 
+const hotelSelect = document.getElementById("hotelSelect");
+const roomSelect = document.getElementById("roomSelect");
+
+async function loadHotelsForAdmin() {
+    try {
+        const res = await fetch("/api/hotels?q=");
+        const hotels = await res.json();
+
+        hotelSelect.innerHTML = "";
+
+        if (!Array.isArray(hotels) || hotels.length === 0) {
+            hotelSelect.innerHTML = `<option value="">No hotels found</option>`;
+            roomSelect.innerHTML = `<option value="">No rooms available</option>`;
+            return;
+        }
+
+        hotels.forEach(hotel => {
+            const option = document.createElement("option");
+            option.value = hotel.hotel_id;
+            option.textContent = `${hotel.name} - ${hotel.city}`;
+            hotelSelect.appendChild(option);
+        });
+
+        await loadRoomsForSelectedHotel();
+    } catch (err) {
+        hotelSelect.innerHTML = `<option value="">Error loading hotels</option>`;
+        roomSelect.innerHTML = `<option value="">Error loading rooms</option>`;
+    }
+}
+
+async function loadRoomsForSelectedHotel() {
+    const hotelId = hotelSelect.value;
+
+    roomSelect.innerHTML = "";
+
+    if (!hotelId) {
+        roomSelect.innerHTML = `<option value="">Select a hotel first</option>`;
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/rooms/${hotelId}`);
+        const rooms = await res.json();
+
+        if (!Array.isArray(rooms) || rooms.length === 0) {
+            roomSelect.innerHTML = `<option value="">No rooms found</option>`;
+            return;
+        }
+
+        rooms.forEach(room => {
+            const option = document.createElement("option");
+            option.value = room.room_id;
+            option.textContent = `Room ${room.roomNumber} - ${room.roomType}`;
+            roomSelect.appendChild(option);
+        });
+    } catch (err) {
+        roomSelect.innerHTML = `<option value="">Error loading rooms</option>`;
+    }
+}
+
 async function loadReservations() {
     try {
         const res = await fetch("/api/reservations");
@@ -20,7 +80,9 @@ async function loadReservations() {
             div.className = "room-card";
             div.innerHTML = `
                 <p><strong>ID:</strong> ${r.reservation_id}</p>
+                <p><strong>Hotel:</strong> ${r.hotelName || "Unknown hotel"}</p>
                 <p><strong>Room ID:</strong> ${r.room_id}</p>
+                <p><strong>Room Number:</strong> ${r.roomNumber ?? ""}</p>
                 <p><strong>Status:</strong> ${r.status}</p>
                 <p><strong>Name:</strong> ${r.name}</p>
                 <p><strong>Phone:</strong> ${r.phone}</p>
@@ -52,7 +114,9 @@ async function loadBlocks() {
             div.className = "room-card";
             div.innerHTML = `
                 <p><strong>Block ID:</strong> ${block.block_id}</p>
+                <p><strong>Hotel:</strong> ${block.hotelName || "Unknown hotel"}</p>
                 <p><strong>Room ID:</strong> ${block.room_id}</p>
+                <p><strong>Room Number:</strong> ${block.roomNumber ?? ""}</p>
                 <p><strong>Start:</strong> ${block.startDate}</p>
                 <p><strong>End:</strong> ${block.endDate}</p>
                 <p><strong>Reason:</strong> ${block.reason || ""}</p>
@@ -66,13 +130,13 @@ async function loadBlocks() {
 }
 
 async function blockRoom() {
-    const room_id = document.getElementById("roomId").value;
+    const room_id = roomSelect.value;
     const startDate = document.getElementById("startDate").value;
     const endDate = document.getElementById("endDate").value;
     const reason = document.getElementById("reason").value;
 
     if (!room_id || !startDate || !endDate) {
-        blockMessage.textContent = "Please fill in room ID, start date, and end date.";
+        blockMessage.textContent = "Please fill in room, start date, and end date.";
         blockMessage.style.color = "red";
         return;
     }
@@ -108,7 +172,6 @@ async function blockRoom() {
         blockMessage.textContent = "Blocked dates saved successfully.";
         blockMessage.style.color = "green";
 
-        document.getElementById("roomId").value = "";
         document.getElementById("startDate").value = "";
         document.getElementById("endDate").value = "";
         document.getElementById("reason").value = "";
@@ -139,7 +202,9 @@ async function deleteBlock(blockId) {
     }
 }
 
+hotelSelect.addEventListener("change", loadRoomsForSelectedHotel);
 blockBtn.addEventListener("click", blockRoom);
 
+loadHotelsForAdmin();
 loadReservations();
 loadBlocks();

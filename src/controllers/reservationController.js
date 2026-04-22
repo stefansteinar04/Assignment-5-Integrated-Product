@@ -82,7 +82,27 @@ function getReservations(req, res) {
             return res.status(500).json({ error: err.message });
         }
 
-        res.json(rows);
+        if (!rows.length) {
+            return res.json([]);
+        }
+
+        let remaining = rows.length;
+        const enrichedRows = [];
+
+        rows.forEach((row, index) => {
+            hotelDb.getRoomWithHotelById(row.room_id, (err, roomInfo) => {
+                enrichedRows[index] = {
+                    ...row,
+                    hotelName: roomInfo ? roomInfo.hotelName : "Unknown hotel",
+                    roomNumber: roomInfo ? roomInfo.roomNumber : null
+                };
+
+                remaining--;
+                if (remaining === 0) {
+                    res.json(enrichedRows);
+                }
+            });
+        });
     });
 }
 
@@ -93,7 +113,27 @@ function getBlocks(req, res) {
             return res.status(500).json({ error: err.message });
         }
 
-        res.json(rows);
+        if (!rows.length) {
+            return res.json([]);
+        }
+
+        let remaining = rows.length;
+        const enrichedRows = [];
+
+        rows.forEach((row, index) => {
+            hotelDb.getRoomWithHotelById(row.room_id, (err, roomInfo) => {
+                enrichedRows[index] = {
+                    ...row,
+                    hotelName: roomInfo ? roomInfo.hotelName : "Unknown hotel",
+                    roomNumber: roomInfo ? roomInfo.roomNumber : null
+                };
+
+                remaining--;
+                if (remaining === 0) {
+                    res.json(enrichedRows);
+                }
+            });
+        });
     });
 }
 

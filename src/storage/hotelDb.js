@@ -37,8 +37,25 @@ function getRoomById(roomId, callback) {
     hotelDb.get(sql, [roomId], callback);
 }
 
+function getRoomWithHotelById(roomId, callback) {
+    const sql = `
+        SELECT 
+            r.room_id,
+            r.roomNumber,
+            r.roomType,
+            r.hotel_id,
+            h.name AS hotelName
+        FROM Room r
+        JOIN Hotel h ON r.hotel_id = h.hotel_id
+        WHERE r.room_id = ?
+    `;
+
+    hotelDb.get(sql, [roomId], callback);
+}
+
 module.exports = {
     searchHotels,
     getRoomsByHotelId,
-    getRoomById
+    getRoomById,
+    getRoomWithHotelById
 };
